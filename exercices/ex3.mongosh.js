@@ -1,0 +1,69 @@
+db.loans.aggregate([
+    {
+        $match:{
+            status:"RETURNED"
+        }
+    },
+    {
+      $lookup:{
+        from:"equipments",
+        localField:"equipmentId",
+        foreignField:"_id",
+        as:"result",
+        pipeline:[
+            {
+                $match:{
+                    archived:false
+                }
+            }
+        ]
+      }
+    },
+    {
+        $lookup:{
+        from:"members",
+        localField:"memberId",
+        foreignField:"_id",
+        as:"info",
+        pipeline:[
+            {
+                $match:{
+                    active:true
+                }
+            }
+        ]
+      }
+
+    },
+     {
+        $unwind:"$result"
+    },
+    {
+        $unwind:"$info"
+    },
+    {
+        $group:{
+            _id:"$info.city",
+            Prêts_rendus_admissibles:{$sum:1},
+            Recettes:{$sum:"$feeCents"}
+        }
+    },
+    {
+        $sort:{
+            Recettes:-1,
+            _id:1
+
+        }
+    },
+    {
+        $project:{
+            ville:"$_id",
+            _id:0,
+            Prêts_rendus_admissibles:1,
+            Recettes:1
+
+
+        }
+    }
+    
+]).forEach(printjson)
