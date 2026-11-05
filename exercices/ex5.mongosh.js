@@ -1,0 +1,69 @@
+db.loans.aggregate([
+    {
+        $match:{
+            status:"RETURNED",
+            returnedAt:{
+                $gte:ISODate("2026-03-01T00:00:00Z"),
+                $lt:ISODate("2026-05-01T00:00:00Z")
+            }
+        }
+    },
+    {
+        $lookup:{
+            from:"equipments",
+            localField:"equipmentId",
+            foreignField:"_id",
+            as:"info",
+            pipeline:[
+                {
+                    $match:{
+                        archived: false
+                    }
+                }
+            ]
+        }
+    },
+    {
+        $unwind:"$info"
+    },
+    {
+      $addFields:{
+        periode:{
+            $dateToString:{
+                format:"%Y-%m",
+                date:"$returnedAt"
+            }
+        }
+      }
+    },
+    {
+        $group:{
+            _id:{
+               category:"$info.category",
+               periode:"$periode"
+
+            },
+            Prêts:{$sum:1},
+            Recettes:{$sum:"$feeCents"}
+        }
+    },
+    {
+        $sort:{
+            "_id.periode":1,
+            Recettes:-1,
+            "_id.category":1
+
+        }
+    },
+    {
+        $project:{
+            mois:"$_id.periode",
+            category:"$_id.category",
+            _id:0,
+            Prêts:1,
+            Recettes:1
+
+
+        }
+    }
+]).forEach(printjson)
