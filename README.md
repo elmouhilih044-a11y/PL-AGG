@@ -10,3 +10,7 @@ mongosh "mongodb://127.0.0.1:27017/pl_aggregations" --file exercices/ex2.mongosh
 ## Exécution de l'exercice 3
 
 mongosh "mongodb://127.0.0.1:27017/pl_aggregations" --file exercices/ex3.mongosh.js
+
+## Exécution de l'exercice 4
+
+mongosh "mongodb://127.0.0.1:27017/pl_aggregations" --file exercices/ex4.mongosh.js

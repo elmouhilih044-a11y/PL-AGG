@@ -1,0 +1,51 @@
+db.maintenance.aggregate([
+    {
+        $match:{
+            status:"DONE"
+        }
+    },
+    {
+        $lookup:{
+            from:"equipments",
+            localField:"equipmentId",
+            foreignField:"_id",
+            as:"info",
+        pipeline:[
+            {
+            $match:{
+             archived:false
+            }  
+            }
+         
+        ]
+        }
+    },
+    {
+       $unwind:"$info"  
+    },
+    {
+        $group:{
+            _id:"$info.category",
+            Interventions_terminées:{$sum:1},
+            Coût_total:{$sum:"$costCents"},
+            Coût_moyen:{$avg:"$costCents"}
+        }
+    },
+    {
+        $sort:{
+           Coût_total:-1 
+        }
+    },
+    {
+        $project:{
+            catégorie:"$_id",
+            Interventions_terminées:1,
+            _id:0,
+            Coût_total:1,
+            Coût_moyen:{$round:["$Coût_moyen",2]}
+
+
+        }
+    }
+   
+]).forEach(printjson)
